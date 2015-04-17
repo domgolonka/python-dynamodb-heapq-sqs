@@ -16,9 +16,11 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 DEL_QUERY_PATTERN = "^id=[0-9]|^name=[a-zA-Z_ ]"
 ADD_ACTS_QUERY_PATTERN = "id=[0-9]+&activities=[a-zA-Z_ ]+[,a-zA-Z_ ]+"
+RET_QUERY_PATTERN = "^id=[0-9]|^name=[a-zA-Z_ ]"
 
 del_pat = re.compile(DEL_QUERY_PATTERN)
 addActs_pat = re.compile (ADD_ACTS_QUERY_PATTERN)
+retrieve_pat = re.compile (RET_QUERY_PATTERN)
 
 AWS_REGION = "us-west-2"
 PORT = 8080
@@ -75,3 +77,23 @@ def do_add_activities(my_sqs):
    	my_sqs.write(f)
 
 	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))
+
+def do_retrieve(my_sqs):
+	print"Retrieve has been called\n"
+	if not retrieve_pat.match(request.query_string):
+		abort(404, "Query string does not match pattern '{0}'".format(RET_QUERY_PATTERN))
+
+	if "id" in request.query:
+		id_query = request.query.id
+		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "id": id_query}}
+		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
+
+	elif "name" in request.query:
+		name_query = request.query.name
+		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "name": name_query}}
+		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
+	
+	f = boto.sqs.message.Message()
+	f.set_body(json.dumps(sqs_msg))
+	my_sqs.write(f)
+	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))

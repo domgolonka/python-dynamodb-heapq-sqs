@@ -38,6 +38,11 @@ def add_activities():
 	my_sqs = getConn()
 	return operations.do_add_activities(my_sqs)
 
+@route('/retrieve')
+def retrieve():
+	import operations
+	my_sqs = getConn()
+	return operations.do_retrieve(my_sqs)
 
 def getConn():
 	try:
