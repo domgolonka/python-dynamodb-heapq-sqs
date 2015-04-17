@@ -78,20 +78,20 @@ def do_add_activities(my_sqs):
 
 	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))
 
-def do_retrieve():
+def do_retrieve(my_sqs):
 	print"Retrieve has been called\n"
 	if not retrieve_pat.match(request.query_string):
 		abort(404, "Query string does not match pattern '{0}'".format(RET_QUERY_PATTERN))
 
-	if "id" in request.query_string:
+	if "id" in request.query:
 		id_query = request.query.id
 		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "id": id_query}}
-		msg = { "data": {"type": "Notification", "msg": "Accepted"}
+		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
 
-	elif "name" in request.query_string:
+	elif "name" in request.query:
 		name_query = request.query.name
 		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "name": name_query}}
-		msg = { "data": {"type": "Notification", "msg": "Accepted"} 
+		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
 	
 	f = boto.sqs.message.Message()
 	f.set_body(json.dumps(sqs_msg))
