@@ -15,7 +15,10 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 
 DEL_QUERY_PATTERN = "^id=[0-9]|^name=[a-zA-Z_ ]"
+ADD_ACTS_QUERY_PATTERN = "id=[0-9]+&activities=[a-zA-Z_ ]+[,a-zA-Z_ ]+"
+
 del_pat = re.compile(DEL_QUERY_PATTERN)
+addActs_pat = re.compile (ADD_ACTS_QUERY_PATTERN)
 
 AWS_REGION = "us-west-2"
 PORT = 8080
@@ -49,6 +52,26 @@ def do_delete(my_sqs):
 	my_sqs.write(f)
 	return HTTPResponse(status=msg_status, body=json.dumps(msg,indent=4))
 
+def do_add_activities(my_sqs):
+	#msg = ""
+	#msg_status = 404
 
+	print"Add_Activities has been called\n"
+	if not addActs_pat.match(request.query_string):
+            abort(404, "Query string does not match pattern '{0}'".format(ADD_ACTS_QUERY_PATTERN))
+ 	
+   	#id_query = parse_input(request.query_string+'&',"id=")
+   	id_addAct = request.query.id
+   	activities = request.query_string+'&'
+   	begin = activities.index("activities=") + len("activities=")
+   	end = activities.index("&", begin)
+   	activities_list = activities[begin:end]
 
-	
+   	sqs_msg = { "req_type" : "add_activities", 'data': {"type":"person", "id": id_addAct, "activities": activities_list}}
+   	msg = { "data": {"type": "Notification", "msg": "Accepted"} }
+
+   	f = boto.sqs.message.Message()
+   	f.set_body(json.dumps(sqs_msg))
+   	my_sqs.write(f)
+
+	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))
