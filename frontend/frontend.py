@@ -32,6 +32,12 @@ def delete():
 	my_sqs = getConn()
 	return operations.do_delete(my_sqs)
 
+@route('/add_activities')
+def add_activities():
+	import operations
+	my_sqs = getConn()
+	return operations.do_add_activities(my_sqs)
+
 
 def getConn():
 	try:
