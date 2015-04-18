@@ -38,14 +38,14 @@ def do_delete(my_sqs):
 		begin = id_delete.index("id=") + len("id=")
 		end = id_delete.index("&",begin) # find the end index
 		id_delete = id_delete[begin:end]
-		sqs_msg = { "req_type": "delete", "data": { "type": "person", "id" : str(id_delete) } }
+		sqs_msg = { "req_type": "delete", "by": "id", "data": { "type": "person", "id" : str(id_delete) } }
 		msg = {"data":"Query sent to SQS"}
 		msg_status = 200
 		
 
 	elif "name" in request.query: #checks to see if delete request if by name
 		get_name = request.query.name
-		sqs_msg = { "req_type": "delete", "data": { "type": "person", "name" : get_name} }
+		sqs_msg = { "req_type": "delete", "by": "name", "data": { "type": "person", "name" : get_name} }
 		msg = {"data":"Query sent to SQS"}
 		msg_status = 200
 
