@@ -23,7 +23,7 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 AWS_REGION = "us-west-2"
 PORT = 8080
-Assign3_table = Table('Assign3-BasicDB',connection = boto.dynamodb2.connect_to_region(AWS_REGION))
+
 
 
 @route('/delete')
