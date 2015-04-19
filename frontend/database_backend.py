@@ -40,6 +40,10 @@ SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
 DEFAULT_NAME = BASE_INSTANCE_NAME + "1"
 BARRIER_NAME = "/Ready"
 
+DEFAULT_INPUT_SQS_NAME = "input_SQS"
+DEFAULT_OUTPUT_SQS_NAME = "output_SQS"
+
+
 # Publish and subscribe constants
 SUB_TO_NAME = 'localhost' # By default, we subscribe to our own publications
 BASE_PORT = 7777
@@ -50,6 +54,12 @@ def build_parser():
     parser.add_argument("zkhost", help="ZooKeeper host string (name:port or IP:port, with port defaulting to 2181)")
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
+
+    parser.add_argument("inSQS_name", type=int, help="name of input queue", nargs='?', default=1)
+    parser.add_argument("outSQS_name", type=int, help="name of output queue", nargs='?', default=1)
+
+
+
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("sub_to_name", help="Name of system to subscribe to", nargs='?', default=SUB_TO_NAME)
     parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
@@ -133,6 +143,42 @@ def kzcl(kz):
         kz.stop()
         kz.close()
 
+def getSQSConn(queue_name):
+  
+  AWS_REGION = "us-west-2"
+  try:
+    conn = boto.sqs.connect_to_region(AWS_REGION)
+    if conn == None:
+      sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
+      sys.exit(1)
+
+    my_q = conn.create_queue(queue_name)
+
+  except Exception as e:
+    sys.stderr.write("Exception connecting to SQS\n")
+    sys.stderr.write(str(e))
+    sys.exit(1)
+
+  return my_q
+
+def getTable(table_name):
+  try: 
+      DB_table = Table.create(table_name, schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
+  
+  except boto.exception.JSONResponseError as table_warning:
+      if table_warning.body['message'] == "Table already exists!":
+        DB_table = Table(table_name, connection = boto.dynamodb2.connect_to_region(AWS_REGION))
+      else:
+        raise table_warning
+      
+  except Exception as e:
+      sys.stderr.write("Exception connecting to DynamoDB\n")
+      sys.stderr.write(str(e))
+      sys.exit(1)
+
+  return DB_table
+
+
 def main():
     '''
        Main routine. Initialize everything, wait
@@ -154,6 +200,7 @@ def main():
        retrieve_route() doesn't declare `args` because it
        only reads that global variable.
     '''
+
     global args
     global table
     global seq_num
@@ -164,9 +211,13 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # Set up the Database
 
-    DB.db_name
+    # connect to sqs queues
+    in_sqs = getSQSConn(args.inSQS_name)
+    out_sqs = getSQSConn(args.outSQS_name)
+
+    # Set up the Database
+    db_table = getTable(args.name)
 
     # Initialize request id from durable storage
     if not os.path.isfile(REQ_ID_FILE):
