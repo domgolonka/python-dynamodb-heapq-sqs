@@ -98,7 +98,7 @@ def do_retrieve(my_sqs):
 	my_sqs.write(f)
 	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))
 
-def do_create():
+def do_create(my_sqs):
 
 	my_sqs = getConn()
 	id = int(request.query.id)

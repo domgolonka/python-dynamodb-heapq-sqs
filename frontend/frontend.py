@@ -47,9 +47,11 @@ APP_DIR = "/" + BASE_INSTANCE_NAME
 PUB_PORT = "/Pub"
 SUB_PORTS = "/Sub"
 SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
-DEFAULT_NAME = INPUT_QUEUE
+#DEFAULT_NAME = INPUT_QUEUE
 BARRIER_NAME = "/Ready"
 
+
+DEFAULT_INPUT_Q_NAME = "inQueue"
 # Publish and subscribe constants
 SUB_TO_NAME = 'localhost' # By default, we subscribe to our own publications
 BASE_PORT = 7777
@@ -64,16 +66,21 @@ def build_parser():
     ''' Define parser for command-line arguments '''
     parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
     parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
-    parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_NAME)
+    parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
     return parser
 
 
 
 def main():
 	global queuename
+	global in_Q_conn
+
 	parser = build_parser()
 	args = parser.parse_args()
 	queuename = args.name
+
+	in_Q_conn = getConn()
+
 	app = default_app()
 	run(app, host="localhost", port=args.web_port)
 
@@ -98,28 +105,39 @@ def getConn():
 
 @route('/delete')
 def delete():
+	global in_Q_conn
 
 	import operations
-	my_sqs = getConn()
-	return operations.do_delete(my_sqs)
+	#my_sqs = getConn()
+	#return operations.do_delete(my_sqs)
+
+	return operations.do_delete(in_Q_conn)
 
 @route('/create')
 def create():
+	global in_Q_conn
+
 	import operations
-	my_sqs = getConn()
-	return operations.do_create(my_sqs)
+	#my_sqs = getConn()
+	#return operations.do_create(my_sqs)
+
+	return operations.do_create(in_Q_conn)
 
 @route('/add_activities')
 def add_activities():
+	global in_Q_conn
 	import operations
-	my_sqs = getConn()
-	return operations.do_add_activities(my_sqs)
+	#my_sqs = getConn()
+	#return operations.do_add_activities(my_sqs)
+	return operations.do_add_activities(in_Q_conn)
 
 @route('/retrieve')
 def retrieve():
+	global in_Q_conn
 	import operations
-	my_sqs = getConn()
-	return operations.do_retrieve(my_sqs)
+	#my_sqs = getConn()
+	#return operations.do_retrieve(my_sqs)
+	return operations.do_add_retrieve(in_Q_conn)
 
 
 # Standard Python shmyntax for the main file in an application
