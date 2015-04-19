@@ -55,18 +55,16 @@ def do_delete(my_sqs):
 	f = boto.sqs.message.Message()
 	f.set_body(json.dumps(sqs_msg))
 	my_sqs.write(f)
+	
 	return HTTPResponse(status=msg_status, body=json.dumps(msg,indent=4))
 
 def do_add_activities(my_sqs):
-	#msg = ""
-	#msg_status = 404
-
 	print"Add_Activities has been called\n"
 	if not addActs_pat.match(request.query_string):
             abort(404, "Query string does not match pattern '{0}'".format(ADD_ACTS_QUERY_PATTERN))
  	
-   	#id_query = parse_input(request.query_string+'&',"id=")
    	id_addAct = request.query.id
+
    	activities = request.query_string+'&'
    	begin = activities.index("activities=") + len("activities=")
    	end = activities.index("&", begin)
@@ -99,21 +97,27 @@ def do_retrieve(my_sqs):
 	f = boto.sqs.message.Message()
 	f.set_body(json.dumps(sqs_msg))
 	my_sqs.write(f)
+
 	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))
 
 def do_create(my_sqs):
-	id = int(request.query.id)
+	print "Create has been called\n"
 	if not create_pat.match(request.query_string):
 		#print"Create has been called\n"
 		abort(400, "Query string does not match pattern '{0}'".format(CREATE_QUERY_PATTERN))
-	id = parse_input(request.query_string+'&',"id=")
-	name = parse_input(request.query_string+'&',"name=")
-	activities_query = json.dumps(parse_input(request.query_string+'&','activities=').split(','))
 
-	sqs_msg = { "req_type" : "create", 'data': {"type":"person", "id": id, 'name':str(name), "activities": activities_query}}
+	id_query = request.query.id
+
+	name_query = request.query.name
+
+	activities = request.query_string+'&'
+   	begin = activities.index("activities=") + len("activities=")
+   	end = activities.index("&", begin)
+   	activities_list = activities[begin:end]
+
+	sqs_msg = { "req_type" : "create", 'data': {"type":"person", "id": id, 'name':str(name), "activities": activities_list}}
 	msg = { "data": {"type": "Notification", "msg": "Accepted"} }
 	
-	reqSend()
 	f = boto.sqs.message.Message()
 	f.set_body(json.dumps(sqs_msg))
 	my_sqs.write(f)
