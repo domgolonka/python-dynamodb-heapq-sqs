@@ -34,12 +34,8 @@ class Database:
 		    if conn == None:
 		        sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
 		        sys.exit(1)
-
-
 		    input_q = conn.get_queue(sqsqueue)
 		    #input_q.set_message_class()
-		    
-
 		except Exception as e:
 		    sys.stderr.write("Exception connecting to SQS\n")
 		    sys.stderr.write(str(e))
@@ -50,21 +46,12 @@ class Database:
 		    if conn == None:
 		        sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
 		        sys.exit(1)
-
-
 		    output_q = conn.create_queue(sqsqueue)
 		    #input_q.set_message_class()
-		    
-
 		except Exception as e:
 		    sys.stderr.write("Exception connecting to SQS\n")
 		    sys.stderr.write(str(e))
 		    sys.exit(1)
-
-
-
-
-
 		try: 
 				DB1_table = Table.create('DB1_table', schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
 		except boto.exception.JSONResponseError	as table_warning:
@@ -77,10 +64,6 @@ class Database:
 				sys.stderr.write("Exception connecting to DynamoDB\n")
 				sys.stderr.write(str(e))
 				sys.exit(1)
-
-
-
-
 		while True:
 			print "lalala"
 
@@ -101,6 +84,15 @@ class Database:
 				print "Im retrieving"
 				import DBoperations
 				msg = DBoperations.do_retrieve(req,DB1_table,output_q)
+			elif req["req_type"]== "create":
+				print "Im creating"
+				import DBoperations
+				msg = DBoperations.do_create(req,DB1_table,output_q)
+			elif req["req_type"]=="add_activities"
+				print "Im addig activities"
+				import DBoperations
+				msg = DBoperations.do_add_activities(req,DB1_table,output_q)
+
 	
 				
 
