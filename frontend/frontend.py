@@ -137,7 +137,7 @@ def retrieve():
 	import operations
 	#my_sqs = getConn()
 	#return operations.do_retrieve(my_sqs)
-	return operations.do_add_retrieve(in_Q_conn)
+	return operations.do_retrieve(in_Q_conn)
 
 
 # Standard Python shmyntax for the main file in an application

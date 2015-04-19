@@ -63,6 +63,41 @@ def do_delete(req,DB1_table,output_q):
 
 	return 1 #do we really need to turn anything ?
 
+def do_retrieve(req,DB1_table,output_q):
+	msg = ""
+	msg_status = 404 #assume is an error to start of with
+	msg_q =""
+	id_delete=""
+	if req["by"]=="id":
+		id_retrieve = req ["data"]["id"]
+		print id_retrieve
+		try:
+			retrieve_item = DB1_table.get_item(id = id_retrieve)
+			msg_q= {"data": {"type" : "person", "id": str(id_retrieve)}}
+			msg_status = 200
+		except Exception as id_doesnt_exist:
+			msg_q= {"errors":[{"not_found":{"id": str(id_retrieve)}}]}
+			msg_status = 404
+			
+	elif req["by"]=="name":
+		get_name = req["data"]["name"]
+		try:
+		 	query=DB1_table.scan()
+		 	for res in query:
+				if res['name'] == get_name:  #if the name matahes it breaks out
+					retrieve_id = res['id']
+					break
+			delete_item2= DB1_table.get_item(id=retrieve_id)
+			msg_q = { "data": { "type": "person", "id" : str(retrieve_id) } }
+			msg_status = 200
+
+		except Exception as name_doesnt_exist:
+			msg= {"errors":[{"not_found":{"name": str(get_name)}}]}
+			msg_status = 404
+			
+			
+		
+
 
 
 	

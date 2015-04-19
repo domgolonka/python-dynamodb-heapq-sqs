@@ -87,10 +87,16 @@ def db_main():
 		else:
 			req = json.loads(req_smg.get_body())
 			if req["req_type"] =="delete":
-				print"yaya me"
+				print "Im deleting"
 			#	time.sleep(4)
 				import DBoperations
 				msg = DBoperations.do_delete(req,DB1_table,output_q)
+				
+			elif req["req_type"]=="retrieve":
+				print "Im retrieving"
+				import DBoperations
+				msg = DBoperations.do_retrieve(req,DB1_table,output_q)
+			
 			
 			
 
