@@ -17,15 +17,6 @@ import contextlib
 import boto.sqs
 import boto.sqs.message
 import boto.dynamodb2
-
-import zmq
-import kazoo.exceptions
-import kazooclientlast
-
-
-import gen_ports
-import DB
-
 from boto.dynamodb2.items import Item
 from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
 from boto.dynamodb2.table import Table
@@ -62,9 +53,6 @@ def main():
 	args = parser.parse_args()
 	queuename = args.name
 	web_port  = args.web_port
-	print "i get here"
-	print queuename
-	print web_port
 
 	in_Q_conn = getConn()
 
