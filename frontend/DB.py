@@ -84,19 +84,24 @@ class Database:
 		while True:
 			print "lalala"
 
-			req_smg = input_q.read()
-			
-			
-			if not req_smg:
-				time.sleep(1)
-			else:
-				req = json.loads(req_smg.get_body())
-				if req["req_type"] =="delete":
-					print"yaya me"
-				#	time.sleep(4)
-					import DBoperations
-					msg = DBoperations.do_delete(req,DB1_table,output_q)
+		req_smg = input_q.read()
+		
+		
+		if not req_smg:
+			time.sleep(1)
+		else:
+			req = json.loads(req_smg.get_body())
+			if req["req_type"] =="delete":
+				print "Im deleting"
+			#	time.sleep(4)
+				import DBoperations
+				msg = DBoperations.do_delete(req,DB1_table,output_q)
 				
+			elif req["req_type"]=="retrieve":
+				print "Im retrieving"
+				import DBoperations
+				msg = DBoperations.do_retrieve(req,DB1_table,output_q)
+	
 				
 
 				
