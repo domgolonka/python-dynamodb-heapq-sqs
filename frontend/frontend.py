@@ -34,50 +34,37 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 
 
-AWS_REGION = "us-west-2"
-
-REQ_ID_FILE = "reqid.txt"
-
-
-# Instance naming
-BASE_INSTANCE_NAME = "DB"
-
-# Names for ZooKeeper hierarchy
-APP_DIR = "/" + BASE_INSTANCE_NAME
-PUB_PORT = "/Pub"
-SUB_PORTS = "/Sub"
-SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
-#DEFAULT_NAME = INPUT_QUEUE
-BARRIER_NAME = "/Ready"
-
-
 DEFAULT_INPUT_Q_NAME = "inQueue"
-# Publish and subscribe constants
-SUB_TO_NAME = 'localhost' # By default, we subscribe to our own publications
-BASE_PORT = 7777
-
 AWS_REGION = "us-west-2"
 WEB_PORT = 8080
 
-RETDEL_QUERY_PATTERN = "^id=[0-9]|^name=[a-zA-Z_ ]"
-ADD_ACTS_QUERY_PATTERN = "id=[0-9]+&activities=[a-zA-Z_ ]+[,a-zA-Z_ ]+"
+
 
 def build_parser():
-    ''' Define parser for command-line arguments '''
-    parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
-    parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
-    parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
-    return parser
-
-
+	''' Define parser for command-line arguments '''
+	parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
+	parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
+	parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
+	args = parser.parse_args()
+	print args.name
+	return parser
+	argument1 =sys.argv[1]
+	print argument1
 
 def main():
+	#argument1 =sys.argv[1]
+	#print argument1
+	global web_port
 	global queuename
 	global in_Q_conn
 
 	parser = build_parser()
 	args = parser.parse_args()
 	queuename = args.name
+	web_port  = args.web_port
+	print "i get here"
+	print queuename
+	print web_port
 
 	in_Q_conn = getConn()
 
@@ -107,21 +94,21 @@ def getConn():
 def delete():
 	global in_Q_conn
 
-	import operations
+	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_delete(my_sqs)
 
-	return operations.do_delete(in_Q_conn)
+	return frontoperations.do_delete(in_Q_conn)
 
 @route('/create')
 def create():
 	global in_Q_conn
 
-	import operations
+	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_create(my_sqs)
 
-	return operations.do_create(in_Q_conn)
+	return frontoperations.do_create(in_Q_conn)
 
 @route('/add_activities')
 def add_activities():
@@ -129,7 +116,7 @@ def add_activities():
 	import operations
 	#my_sqs = getConn()
 	#return operations.do_add_activities(my_sqs)
-	return operations.do_add_activities(in_Q_conn)
+	return frontoperations.do_add_activities(in_Q_conn)
 
 @route('/retrieve')
 def retrieve():
@@ -137,10 +124,11 @@ def retrieve():
 	import operations
 	#my_sqs = getConn()
 	#return operations.do_retrieve(my_sqs)
-	return operations.do_retrieve(in_Q_conn)
+	return frontoperations.do_retrieve(in_Q_conn)
 
 
 # Standard Python shmyntax for the main file in an application
+
 if __name__ == "__main__":
     main()
     
