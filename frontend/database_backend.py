@@ -164,9 +164,9 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    # Set up the table
-    
-    table = DB.db_name
+    # Set up the Database
+
+    DB.db_name
 
     # Initialize request id from durable storage
     if not os.path.isfile(REQ_ID_FILE):
