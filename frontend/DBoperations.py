@@ -31,7 +31,7 @@ def do_delete(req,DB1_table,output_q):
 		try:
 			delete_item= DB1_table.get_item(id=id_delete)
 			delete_item.delete()
-			msg = { "data": { "type": "person", "id" : str(id_delete) } }
+			msg_q= { "data": { "type": "person", "id" : str(id_delete) } }
 			msg_status = 200
 		except Exception as id_doesnt_exist:
 			msg_q= {"errors":[{"not_found":{"id": str(id_delete)}}]}
@@ -57,7 +57,7 @@ def do_delete(req,DB1_table,output_q):
 			msg_status = 404
 
 	out_msg = boto.sqs.message.Message()
-	out_msg.set_body(json.dumps(msg_q))
+	out_msg.set_body(json.dumps(msg_q,indent=4))
 	output_q.write(out_msg)
 
 
@@ -92,10 +92,99 @@ def do_retrieve(req,DB1_table,output_q):
 			msg_status = 200
 
 		except Exception as name_doesnt_exist:
-			msg= {"errors":[{"not_found":{"name": str(get_name)}}]}
+			msg_q= {"errors":[{"not_found":{"name": str(get_name)}}]}
 			msg_status = 404
-			
-			
+	out_msg = boto.sqs.message.Message()
+	out_msg.set_body(json.dumps(msg_q, indent=4))
+	output_q.write(out_msg)
+
+def do_add_activities(req,DB1_table,output_q):
+	activity_id = req["data"]["id"]
+	activity_query = req["data"]["activities"]
+	activity_list= activities_query.split(',')
+	print activity_name
+	print activities_list
+	user = DB1_table.get_item(id=id_query)
+			list_activities = json.loads(user['activities'])	#list of activities from the db
+			list_new_activities = json.loads(activities_query)	#list of activities from the add_activities call
+			added_activities = [] #activities actually added
+
+			for new_act in list_new_activities:
+				if (list_activities.count(new_act) == 0):
+					list_activities.append(new_act)
+					added_activities.append(new_act)
+			updated_activities = json.dumps(list_activities)
+			user['activities'] = updated_activities
+			user.save()
+			msg_q= {'data': {'type':'person', 'id': id_query, 'activities': added_activities}}
+	out_msg = boto.sqs.message.Message()
+	out_msg.set_body(json.dumps(msg_q,indent=4))
+	output_q.write(out_msg)
+
+def do_create(req,DB1_table,output_q):
+	id_query = req["data"]["id"]
+	name_query = req["data"]["name"]
+	activities_query = req["data"]["activities"]
+	try:
+
+		DB1_table.put_item(data = {
+										'type':'person',
+										'id':str(id_query), 
+										'name':str(name_query), 
+										'activities':activities_query
+											})
+		msg_status = 201
+		msg_q= {'data':{'type':'person', 'id': id_query}}#, "links":{"self":"http://localhost:8080/retrieve?id="+ str(id_query)}}}
+	except Exception as acctivities_or_name_differ:
+		check_item = DB1_table.get_item(id = id_query)
+		check_name = str(check_item['name'])
+		if check_name == name_query:# check if the input name is differ than the existing item name
+			list_activities = json.loads(check_item['activities'])#list of existing activities
+			list_new_activities= json.loads(activities_query)# list of input activitis
+			for list in list_new_activities: # check if the input activities are differ than the item activities in the DB
+				if list not in list_activities:
+					msg_status= 400
+					msg_q= {'error':[{
+							'id_exists':{
+								'status': msg_status,
+								'title':'id already exists', 
+								'detail': {
+									'name':name_query, 
+									'activities':activities_query}
+									}
+									}]
+									}
+					out_msg = boto.sqs.message.Message()
+					out_msg.set_body(json.dumps(msg_q, indent =4))
+					output_q.write(out_msg)
+			msg_status = 201
+			msg_q= {'data':{'type':'person', 'id': id_query}}#, "links":{"self":"http://localhost:8080/retrieve?id="+ str(id_query)}}}
+		else:
+				msg_status= 400
+				msg = {'error':[{
+						'id_exists':{
+							'status': msg_status,
+							'title':'id already exists', 
+							'detail': {
+								'name':name_query, 
+								'activities':activities_query}
+								}
+								}]
+								}
+	out_msg = boto.sqs.message.Message()
+	out_msg.set_body(json.dumps(msg_q,indent=4))
+	output_q.write(out_msg)
+
+def parse_input(input_string, attr):# this function parse the input and return the attribute values
+	try:
+		
+		begin = input_string.index(attr) + len(attr)# find the start of the value for the given attribute
+		end = input_string.index("&", begin)# find the end of the value for the given attribute
+		return input_string[begin:end]# return the trimed value of the attribute. everything between the attr= and the firts'&''
+	except ValueError:
+		return ""
+
+
 		
 
 
