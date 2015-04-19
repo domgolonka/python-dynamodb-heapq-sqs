@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+'''
+  CMPT 474-V0.5 ASSIGNMENT 3-BASICDB
+'''
+
+# Library packages
 import os
 import re
 import sys
@@ -28,40 +34,43 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 
 
+DEFAULT_INPUT_Q_NAME = "inQueue"
 AWS_REGION = "us-west-2"
 WEB_PORT = 8080
-DEFAULT_OUT_Q = "outq"
+
 
 
 def build_parser():
     ''' Define parser for command-line arguments '''
     parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
+    parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
     parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
-    parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_OUT_Q)
+    args = parser.parse_args()
+    print args.name
     return parser
 
-
+#argument1 =sys.argv[1]
+	#print argument1
 
 def main():
+	#argument1 =sys.argv[1]
+	#print argument1
+	global web_port
 	global queuename
+	global in_Q_conn
+
 	parser = build_parser()
 	args = parser.parse_args()
 	queuename = args.name
-	out_q = getConn()
+	web_port  = args.web_port
+	print "i get here"
+	print queuename
+	print web_port
 
-	while True:
-		print "ok iam doing something"
-		out_msg = out_q.read()
-
-		if not out_msg:
-			continue
-		else:
-			out_put = json.laods(out_msg.get_body())
-			
+	in_Q_conn = getConn()
 
 	app = default_app()
 	run(app, host="localhost", port=args.web_port)
-
 
 def getConn():
 	global queuename
@@ -80,7 +89,48 @@ def getConn():
 
 	return my_q
 
+
+
+@route('/delete')
+def delete():
+	global in_Q_conn
+
+	import frontoperations
+	#my_sqs = getConn()
+	#return operations.do_delete(my_sqs)
+
+	return frontoperations.do_delete(in_Q_conn)
+
+@route('/create')
+def create():
+	global in_Q_conn
+
+	import frontoperations
+	#my_sqs = getConn()
+	#return operations.do_create(my_sqs)
+
+	return frontoperations.do_create(in_Q_conn)
+
+@route('/add_activities')
+def add_activities():
+	global in_Q_conn
+	import operations
+	#my_sqs = getConn()
+	#return operations.do_add_activities(my_sqs)
+	return frontoperations.do_add_activities(in_Q_conn)
+
+@route('/retrieve')
+def retrieve():
+	global in_Q_conn
+	import operations
+	#my_sqs = getConn()
+	#return operations.do_retrieve(my_sqs)
+	return frontoperations.do_retrieve(in_Q_conn)
+
+
 # Standard Python shmyntax for the main file in an application
+
 if __name__ == "__main__":
     main()
+    
 
