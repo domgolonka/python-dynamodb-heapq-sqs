@@ -113,7 +113,7 @@ def create():
 @route('/add_activities')
 def add_activities():
 	global in_Q_conn
-	import operations
+	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_add_activities(my_sqs)
 	return frontoperations.do_add_activities(in_Q_conn)
@@ -121,7 +121,7 @@ def add_activities():
 @route('/retrieve')
 def retrieve():
 	global in_Q_conn
-	import operations
+	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_retrieve(my_sqs)
 	return frontoperations.do_retrieve(in_Q_conn)

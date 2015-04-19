@@ -31,9 +31,9 @@ PORT = 8080
 def do_delete(my_sqs):
 	msg = ""
 	msg_status = 404 #assume is an error to start of with
-	
+	#print"delete has been called\n"
 	if not del_pat.match(request.query_string):
-		print"delete has been called\n"
+		
 		abort(404, "Query string does not match pattern '{0}'".format(DEL_QUERY_PATTERN))
 
 	if "id" in request.query: #checks to see if the request is by id
@@ -59,7 +59,7 @@ def do_delete(my_sqs):
 	return HTTPResponse(status=msg_status, body=json.dumps(msg,indent=4))
 
 def do_add_activities(my_sqs):
-	print"Add_Activities has been called\n"
+	#print"Add_Activities has been called\n"
 	if not addActs_pat.match(request.query_string):
             abort(404, "Query string does not match pattern '{0}'".format(ADD_ACTS_QUERY_PATTERN))
  	
@@ -80,7 +80,7 @@ def do_add_activities(my_sqs):
 	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))
 
 def do_retrieve(my_sqs):
-	print"Retrieve has been called\n"
+	#print"Retrieve has been called\n"
 	if not retrieve_pat.match(request.query_string):
 		abort(404, "Query string does not match pattern '{0}'".format(RET_QUERY_PATTERN))
 
@@ -101,7 +101,7 @@ def do_retrieve(my_sqs):
 	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))
 
 def do_create(my_sqs):
-	print "Create has been called\n"
+	#print "Create has been called\n"
 	if not create_pat.match(request.query_string):
 		#print"Create has been called\n"
 		abort(400, "Query string does not match pattern '{0}'".format(CREATE_QUERY_PATTERN))
@@ -115,7 +115,7 @@ def do_create(my_sqs):
    	end = activities.index("&", begin)
    	activities_list = activities[begin:end]
 
-	sqs_msg = { "req_type" : "create", 'data': {"type":"person", "id": id, 'name':str(name), "activities": activities_list}}
+	sqs_msg = { "req_type" : "create", 'data': {"type":"person", "id": id_query, "name":str(name_query), "activities": activities_list}}
 	msg = { "data": {"type": "Notification", "msg": "Accepted"} }
 	
 	f = boto.sqs.message.Message()
