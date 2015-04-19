@@ -52,6 +52,7 @@ class Database:
 		    sys.stderr.write("Exception connecting to SQS\n")
 		    sys.stderr.write(str(e))
 		    sys.exit(1)
+		
 		try: 
 				DB1_table = Table.create('DB1_table', schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
 		except boto.exception.JSONResponseError	as table_warning:
@@ -64,34 +65,36 @@ class Database:
 				sys.stderr.write("Exception connecting to DynamoDB\n")
 				sys.stderr.write(str(e))
 				sys.exit(1)
+
+
 		while True:
 			print "lalala"
 
-		req_smg = input_q.read()
+			req_smg = input_q.read()
 		
 		
-		if not req_smg:
-			time.sleep(1)
-		else:
-			req = json.loads(req_smg.get_body())
-			if req["req_type"] =="delete":
-				print "Im deleting"
-			#	time.sleep(4)
-				import DBoperations
-				msg = DBoperations.do_delete(req,DB1_table,output_q)
-				
-			elif req["req_type"]=="retrieve":
-				print "Im retrieving"
-				import DBoperations
-				msg = DBoperations.do_retrieve(req,DB1_table,output_q)
-			elif req["req_type"]== "create":
-				print "Im creating"
-				import DBoperations
-				msg = DBoperations.do_create(req,DB1_table,output_q)
-			elif req["req_type"]=="add_activities"
-				print "Im addig activities"
-				import DBoperations
-				msg = DBoperations.do_add_activities(req,DB1_table,output_q)
+			if not req_smg:
+				time.sleep(1)
+			else:
+				req = json.loads(req_smg.get_body())
+				if req["req_type"] =="delete":
+					print "Im deleting"
+				#	time.sleep(4)
+					import DBoperations
+					msg = DBoperations.do_delete(req,DB1_table,output_q)
+					
+				elif req["req_type"]=="retrieve":
+					print "Im retrieving"
+					import DBoperations
+					msg = DBoperations.do_retrieve(req,DB1_table,output_q)
+				elif req["req_type"]== "create":
+					print "Im creating"
+					import DBoperations
+					msg = DBoperations.do_create(req,DB1_table,output_q)
+				elif req["req_type"]=="add_activities":
+					print "Im addig activities"
+					import DBoperations
+					msg = DBoperations.do_add_activities(req,DB1_table,output_q)
 
 	
 				

@@ -9,6 +9,15 @@ import os.path
 import argparse
 import contextlib
 
+import boto.sqs
+import boto.sqs.message
+import boto.dynamodb2
+
+from boto.dynamodb2.items import Item
+from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
+from boto.dynamodb2.table import Table
+from boto.exception import JSONResponseError
+
 import DB
 
 # Installed packages
@@ -20,12 +29,15 @@ import kazoo.exceptions
 from bottle import route, run, request, response, abort, default_app
 
 # Local modules
-import table
-import retrieve
+#import table
+#import retrieve
 import gen_ports
 import kazooclientlast
 
 REQ_ID_FILE = "reqid.txt"
+
+
+AWS_REGION = "us-west-2"
 
 WEB_PORT = 8080
 
@@ -55,8 +67,8 @@ def build_parser():
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
 
-    parser.add_argument("inSQS_name", type=int, help="name of input queue", nargs='?', default=1)
-    parser.add_argument("outSQS_name", type=int, help="name of output queue", nargs='?', default=1)
+    parser.add_argument("inSQS_name", help="name of input queue", nargs='?', default=1)
+    parser.add_argument("outSQS_name", help="name of output queue", nargs='?', default=1)
 
 
 
@@ -145,13 +157,11 @@ def kzcl(kz):
 
 def getSQSConn(queue_name):
   
-  AWS_REGION = "us-west-2"
   try:
     conn = boto.sqs.connect_to_region(AWS_REGION)
     if conn == None:
       sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
       sys.exit(1)
-
     my_q = conn.create_queue(queue_name)
 
   except Exception as e:
@@ -166,7 +176,7 @@ def getTable(table_name):
       DB_table = Table.create(table_name, schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
   
   except boto.exception.JSONResponseError as table_warning:
-      if table_warning.body['message'] == "Table already exists!":
+      if table_warning.body['message'] == "Table already exists: " + args.name:
         DB_table = Table(table_name, connection = boto.dynamodb2.connect_to_region(AWS_REGION))
       else:
         raise table_warning
@@ -257,9 +267,36 @@ def main():
 
         # Now the instances can start responding to requests
 
-        seq_num = kz.Counter(SEQUENCE_OBJECT)
+        #seq_num = kz.Counter(SEQUENCE_OBJECT)
 
+        while True:
+          print "lalala"
 
+          req_smg = input_q.read()
+        
+        
+          if not req_smg:
+            time.sleep(1)
+          else:
+            req = json.loads(req_smg.get_body())
+            if req["req_type"] =="delete":
+              print "Im deleting"
+            # time.sleep(4)
+              import DBoperations
+              msg = DBoperations.do_delete(req,DB1_table,output_q)
+              
+            elif req["req_type"]=="retrieve":
+              print "Im retrieving"
+              import DBoperations
+              msg = DBoperations.do_retrieve(req,DB1_table,output_q)
+            elif req["req_type"]== "create":
+              print "Im creating"
+              import DBoperations
+              msg = DBoperations.do_create(req,DB1_table,output_q)
+            elif req["req_type"]=="add_activities":
+              print "Im addig activities"
+              import DBoperations
+              msg = DBoperations.do_add_activities(req,DB1_table,output_q)
     
 # Standard Python shmyntax for the main file in an application
 if __name__ == "__main__":
