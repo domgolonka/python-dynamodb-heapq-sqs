@@ -45,11 +45,11 @@ def build_parser():
 	parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
 	parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
 	parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
-	args = parser.parse_args()
-	print args.name
+	#args = parser.parse_args()
+#	print args.name
 	return parser
-	argument1 =sys.argv[1]
-	print argument1
+#	argument1 =sys.argv[1]
+	#print argument1
 
 def main():
 	#argument1 =sys.argv[1]

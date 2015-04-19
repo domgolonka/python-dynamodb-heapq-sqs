@@ -102,10 +102,7 @@ def do_retrieve(my_sqs):
 	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))
 
 def do_create(my_sqs):
-
-	my_sqs = getConn()
 	id = int(request.query.id)
-
 	if not create_pat.match(request.query_string):
 		#print"Create has been called\n"
 		abort(400, "Query string does not match pattern '{0}'".format(CREATE_QUERY_PATTERN))
