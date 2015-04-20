@@ -294,11 +294,11 @@ def main():
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
 
-        input_q=getSQSConn()
+        in_sqs=getSQSConn()
         while True:
           print "lalala"
 
-          req_smg = input_q.read()
+          req_smg = in_sqs.read()
           datajson = pub_socket.recv()
           
           seqid = datajson["seq"]
