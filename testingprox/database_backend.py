@@ -13,6 +13,10 @@ import boto.sqs
 import boto.sqs.message
 import boto.dynamodb2
 
+import heapq
+import heap
+
+
 from boto.dynamodb2.items import Item
 from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
 from boto.dynamodb2.table import Table
@@ -69,12 +73,11 @@ def build_parser():
     parser.add_argument("inSQS_name", help="name of input queue", nargs='?', default="inque")
     parser.add_argument("outSQS_name", help="name of output queue", nargs='?', default="outque")
     parser.add_argument("name_all", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
-    parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
-    parser.add_argument("sub_to_name", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=2)
-    
+    parser.add_argument("sub_to_name", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="localhost")
+    parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
  	
     return parser
 
@@ -243,8 +246,8 @@ def main():
   	'''
 
     #connect to sqs queues
-    in_sqs = getSQSConn()
-    out_sqs = getSQSConn()
+    in_sqs = getSQSConn(args.inSQS_name)
+    out_sqs = getSQSConn(args.outSQS_name)
    
     
     # Set up the Database
@@ -291,22 +294,34 @@ def main():
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
 
-        input_q=getSQSConn()
-
+        in_sqs=getSQSConn()
         while True:
           print "lalala"
 
-          req_smg = input_q.read()
-        
-        
+          req_smg = in_sqs.read()
+          datajson = pub_socket.recv()
+          
+          seqid = datajson["seq"]
+          seqdata = datajson["data"]
+          if datajson:
+            if seqid == seq_num.last_set:
+              #DO SOME OPERATIONS
+            else:
+              h = heap.sqsheapq(seqid)
+              h.create(seqid, seqdata)
           if not req_smg:
-          	seq_num = kz.Counter(SEQUENCE_OBJECT)
-          	print seq_num.value
+            time.sleep(5)
+          else:
+            for soc in sub_sockets
+              senddata(soc, seq_num.last_set, req_smg)
           	seq_num+=1
-          	time.sleep(5)
+          	
             #time.sleep(1)
 
-
+def send(socket, seq, data):
+  ''' Send data through provided socket. '''
+  senddata = {"seq": seq, "data": data}
+  socket.send_json(senddata)
 # Standard Python shmyntax for the main file in an application
 if __name__ == "__main__":
     main()
