@@ -246,8 +246,8 @@ def main():
   	'''
 
     #connect to sqs queues
-    in_sqs = getSQSConn()
-    out_sqs = getSQSConn()
+    in_sqs = getSQSConn(args.inSQS_name)
+    out_sqs = getSQSConn(args.outSQS_name)
    
     
     # Set up the Database
