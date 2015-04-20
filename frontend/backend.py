@@ -12,72 +12,59 @@ import boto.sqs
 import boto.sqs.message
 import boto.dynamodb2
 
-import zmq
-import kazoo.exceptions
-import kazooclientlast
-
-
-import gen_ports
-import DB
-
 from boto.dynamodb2.items import Item
 from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
 from boto.dynamodb2.table import Table
 from boto.exception import JSONResponseError
 from bottle import route, run, request, response, abort, default_app, HTTPResponse
 
-
-
 AWS_REGION = "us-west-2"
-WEB_PORT = 8080
-DEFAULT_OUT_Q = "outq"
-
+WEB_PORT = 8081
+DEFAULT_OUT_Q = "outQ"
 
 def build_parser():
     ''' Define parser for command-line arguments '''
     parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
-    parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
     parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_OUT_Q)
+    parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
     return parser
 
+@route('/')
+def app():
+	global out_Q_conn
+	m = out_Q_conn.read()
 
+	if not m:
+		return ''
+	else:
+		response_msg = m.get_body()
+		out_Q_conn.delete_message(m)
+		return response_msg
 
 def main():
-	global queuename
+	global out_Q_conn
+
 	parser = build_parser()
 	args = parser.parse_args()
-	queuename = args.name
-	out_q = getConn()
+	out_Q_conn = getConn(args.name)
 
-	while True:
-		print "ok iam doing something"
-		out_msg = out_q.read()
-
-		if not out_msg:
-			continue
-		else:
-			out_put = json.laods(out_msg.get_body())
-			
-
+	print "-- BACKEND --"
 	app = default_app()
 	run(app, host="localhost", port=args.web_port)
 
-
-def getConn():
-	global queuename
+def getConn(queue_name):
 	try:
 		conn = boto.sqs.connect_to_region(AWS_REGION)
 		if conn == None:
 			sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
 			sys.exit(1)
 
-		my_q = conn.create_queue(queuename)
+		my_q = conn.create_queue(queue_name)
 
 	except Exception as e:
 		sys.stderr.write("Exception connecting to SQS\n")
 		sys.stderr.write(str(e))
 		sys.exit(1)
-
 	return my_q
 
 # Standard Python shmyntax for the main file in an application

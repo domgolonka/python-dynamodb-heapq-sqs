@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-'''
-  CMPT 474-V0.5 ASSIGNMENT 3-BASICDB
-'''
-
 # Library packages
 import os
 import re
@@ -23,13 +19,9 @@ from boto.dynamodb2.table import Table
 from boto.exception import JSONResponseError
 from bottle import route, run, request, response, abort, default_app, HTTPResponse
 
-
-
-DEFAULT_INPUT_Q_NAME = "inQueue"
+DEFAULT_INPUT_Q_NAME = "inQ"
 AWS_REGION = "us-west-2"
 WEB_PORT = 8080
-
-
 
 def build_parser():
 	''' Define parser for command-line arguments '''
@@ -45,29 +37,25 @@ def build_parser():
 def main():
 	#argument1 =sys.argv[1]
 	#print argument1
-	global web_port
-	global queuename
 	global in_Q_conn
 
 	parser = build_parser()
 	args = parser.parse_args()
-	queuename = args.name
-	web_port  = args.web_port
 
-	in_Q_conn = getConn()
+	in_Q_conn = getConn(args.name)
 
+	print "-- FRONTEND --"
 	app = default_app()
 	run(app, host="localhost", port=args.web_port)
 
-def getConn():
-	global queuename
+def getConn(queue_name):
 	try:
 		conn = boto.sqs.connect_to_region(AWS_REGION)
 		if conn == None:
 			sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
 			sys.exit(1)
 
-		my_q = conn.create_queue(queuename)
+		my_q = conn.create_queue(queue_name)
 
 	except Exception as e:
 		sys.stderr.write("Exception connecting to SQS\n")
@@ -76,8 +64,6 @@ def getConn():
 
 	return my_q
 
-
-
 @route('/delete')
 def delete():
 	global in_Q_conn
@@ -85,7 +71,6 @@ def delete():
 	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_delete(my_sqs)
-
 	return frontoperations.do_delete(in_Q_conn)
 
 @route('/create')
@@ -95,7 +80,6 @@ def create():
 	import frontoperations
 	#my_sqs = getConn()
 	#return operations.do_create(my_sqs)
-
 	return frontoperations.do_create(in_Q_conn)
 
 @route('/add_activities')
@@ -116,7 +100,6 @@ def retrieve():
 
 
 # Standard Python shmyntax for the main file in an application
-
 if __name__ == "__main__":
     main()
     
