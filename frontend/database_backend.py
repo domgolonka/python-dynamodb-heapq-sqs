@@ -159,20 +159,19 @@ def kzcl(kz):
         kz.stop()
         kz.close()
 
-def getSQSConn():
+def getSQSConn(queue_name):
   
   try:
     conn = boto.sqs.connect_to_region(AWS_REGION)
     if conn == None:
       sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
       sys.exit(1)
-    my_q = conn.create_queue("queue_name")
+    my_q = conn.create_queue(queue_name)
 
   except Exception as e:
     sys.stderr.write("Exception connecting to SQS\n")
     sys.stderr.write(str(e))
     sys.exit(1)
-
   return my_q
 
 def getTable(table_name):
@@ -245,8 +244,8 @@ def main():
   	'''
 
     #connect to sqs queues
-    in_sqs = getSQSConn()
-    out_sqs = getSQSConn()
+    in_sqs = getSQSConn(args.inSQS_name)
+    out_sqs = getSQSConn(args.outSQS_name)
    
     
     # Set up the Database
@@ -296,17 +295,17 @@ def main():
        # input_q=getSQSConn()
 
         while True:
-			print "lalala"
-			print args.name
-        #  req_smg = input_q.read()
+          print "lalala"
+          print args.name
+          #  req_smg = input_q.read()
         
         
-        #  if not req_smg:
-        #seq_num = kz.Counter(SEQUENCE_OBJECT)
-			print seq_num.last_set
-			seq_num+=1
-			time.sleep(5)
-            #time.sleep(1)
+          #  if not req_smg:
+          #seq_num = kz.Counter(SEQUENCE_OBJECT)
+          print seq_num.last_set
+          seq_num+=1
+          time.sleep(5)
+          #time.sleep(1)
 
 
 # Standard Python shmyntax for the main file in an application
