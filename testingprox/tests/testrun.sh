@@ -31,11 +31,11 @@ echo ""
 echo ""
 echo i get here
 #gnome-terminal -e "python ./../frontend/database_backend.py $zoostring $input_q $output_q $dbase_names $dbabse_proxy $dbabse_proxy $base_port DB1 $num_db"
-gnome-terminal -e "python ./../frontend/database_backend.py $zoostring $input_q $output_q $dbase_names $dbabse_proxy $dbabse_proxy $base_port DB1 $num_db"
+gnome-terminal -e "python ./../database_backend.py $zoostring $input_q $output_q $dbase_names $dbabse_proxy $dbabse_proxy $base_port DB1 $num_db"
 echo ""
 echo ""
 #python ./../frontend/database_backend.py $zoostring $input_q $output_q $dbase_names $dbabse_proxy $dbabse_proxy $base_port DB2 $num_db
-gnome-terminal -e "python ./../frontend/proxy.py  7777 DB1"
+gnome-terminal -e "python ./../proxy.py  7777 DB1"
 # gnome-terminal -e "python ./../frontend/database_backend.py good $dbabse_proxy $dbabse_proxy; $SHELL"
  #gnome-terminal -e "python ./../frontend/database_backend.py okay $dbabse_proxy $dbabse_proxy; $SHELL"
 
