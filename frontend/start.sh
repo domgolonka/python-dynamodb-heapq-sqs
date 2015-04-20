@@ -1,3 +1,3 @@
 #used for running the runsystem with a pre written inputs
 #acts like a automated tester
-./runsystem.sh	zoo input_Q output_Q 5 5 DB1,DB2 thetable 7777  
+./runsystem.sh	cloudsmall1.cs.surrey.sfu.ca newin newout  25 25 DB1 "" 7777

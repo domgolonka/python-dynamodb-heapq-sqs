@@ -36,10 +36,8 @@ def do_delete(my_sqs):
 		abort(404, "Query string does not match pattern '{0}'".format(DEL_QUERY_PATTERN))
 
 	if "id" in request.query: #checks to see if the request is by id
-		id_delete = request.query_string + '&'#adding in a end marker
-		begin = id_delete.index("id=") + len("id=")
-		end = id_delete.index("&",begin) # find the end index
-		id_delete = id_delete[begin:end]
+		id_delete = request.query.id
+	
 		sqs_msg = { "req_type": "delete", "by": "id", "data": { "type": "person", "id" : str(id_delete) } }
 		msg = {"data":{"type": "Notification", "msg": "Accepted"}}
 		msg_status = 202

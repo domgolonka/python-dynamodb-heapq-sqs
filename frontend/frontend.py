@@ -28,15 +28,11 @@ def build_parser():
 	parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
 	parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
 	parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
-	#args = parser.parse_args()
-#	print args.name
+
 	return parser
-#	argument1 =sys.argv[1]
-	#print argument1
+
 
 def main():
-	#argument1 =sys.argv[1]
-	#print argument1
 	global in_Q_conn
 
 	parser = build_parser()
@@ -67,10 +63,7 @@ def getConn(queue_name):
 @route('/delete')
 def delete():
 	global in_Q_conn
-
 	import frontoperations
-	#my_sqs = getConn()
-	#return operations.do_delete(my_sqs)
 	return frontoperations.do_delete(in_Q_conn)
 
 @route('/create')
@@ -78,26 +71,19 @@ def create():
 	global in_Q_conn
 
 	import frontoperations
-	#my_sqs = getConn()
-	#return operations.do_create(my_sqs)
 	return frontoperations.do_create(in_Q_conn)
 
 @route('/add_activities')
 def add_activities():
 	global in_Q_conn
 	import frontoperations
-	#my_sqs = getConn()
-	#return operations.do_add_activities(my_sqs)
 	return frontoperations.do_add_activities(in_Q_conn)
 
 @route('/retrieve')
 def retrieve():
 	global in_Q_conn
 	import frontoperations
-	#my_sqs = getConn()
-	#return operations.do_retrieve(my_sqs)
 	return frontoperations.do_retrieve(in_Q_conn)
-
 
 # Standard Python shmyntax for the main file in an application
 if __name__ == "__main__":
