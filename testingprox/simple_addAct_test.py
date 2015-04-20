@@ -3,7 +3,6 @@
 # $ python simple.py
 
 import os, time
-
 '''
 def sleep(sec):
 	print "sleeping..."
@@ -11,15 +10,7 @@ def sleep(sec):
 		print "tick"
 		time.sleep(1)
 '''
-os.system("curl 'http://localhost:8080/create?id=4&name=ali&activities=hi,bye'")
-os.system("curl 'http://localhost:8080/add_activities?id=&activities=aloooo'")
-
-
-os.system("curl 'http://localhost:8080/retrieve?id=4'")
-os.system("curl 'http://localhost:8080/delete?id=4'")
-
-#os.system("curl 'http://localhost:8080/?id=4'")
-#os.system("curl 'http://localhost:8080/delete?id=4'")
+os.system("curl 'http://localhost:8080/add_activities?id=4&activities=basketball'")
 
 '''
 print "1: "
