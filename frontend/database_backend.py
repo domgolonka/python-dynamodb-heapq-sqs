@@ -42,7 +42,7 @@ AWS_REGION = "us-west-2"
 WEB_PORT = 8080
 
 # Instance naming
-BASE_INSTANCE_NAME = "DB"
+BASE_INSTANCE_NAME = "GROUP-15"
 
 # Names for ZooKeeper hierarchy
 APP_DIR = "/" + BASE_INSTANCE_NAME
@@ -75,6 +75,8 @@ def build_parser():
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("sub_to_name", help="Name of system to subscribe to", nargs='?', default=SUB_TO_NAME)
     parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
+    parser.add_argument("writecapacity", type=int, help="Write capacity", nargs='?', default="10")
+    parser.add_argument("readcapacity", type=int, help="Read capacity", nargs='?', default="10")
     return parser
 
 def get_ports():
@@ -173,7 +175,7 @@ def getSQSConn(queue_name):
 
 def getTable(table_name):
   try: 
-      DB_table = Table.create(table_name, schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
+      DB_table = Table.create(table_name, schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION), throughput={'read':args.readcapacity,'write': args.writecapacity })
   
   except boto.exception.JSONResponseError as table_warning:
       if table_warning.body['message'] == "Table already exists: " + args.name:
