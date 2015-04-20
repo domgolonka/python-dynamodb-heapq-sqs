@@ -295,35 +295,35 @@ def main():
         seq_num = kz.Counter(SEQUENCE_OBJECT)
 
         #in_sqs=getSQSConn()
-        heaps=false
+        curr_local_seq = 0
         while True:
           print "lalala"
 
-          req_smg = in_sqs.read()
-          datajson = pub_socket.recv()
-          
-          seqid = datajson["seq"]
-          seqdata = datajson["data"]
-          if heaps == true:
-            #something with hea.p
+          if h.getTop():
+            if h.getTop() == curr_local_seq
+              senddata(pub_socket, seq_num.last_set, h.remove())
+              print "H.TOP IS " + h.getTop()
+              print "curr_local_seq IS " + curr_local_seq
+              #operations
+              curr_local_seq+=1
 
-        
-          if datajson:
-            if seqid == seq_num.last_set:
-              #DO SOME OPERATIONS
-              heaps=false
-            else:
-              h = heap.sqsheapq(seqid)
-              h.create(seqid, seqdata)
-              heaps=true
-          if not req_smg:
-            time.sleep(5)
+          req_smg = in_sqs.read()
+          if req_smg:
+            last_seq = seq_num.last_set
+            h = heap.sqsheapq(last_seq)
+            h.create(last_seq, req_smg)
+            print "H.TOP IS NOW " + h.getTop()
           else:
-            for soc in sub_sockets
-              senddata(soc, seq_num.last_set, req_smg)
-            seq_num+=1
-          	#do some database operations
-            #time.sleep(1)
+            time.sleep(2)
+
+          
+
+          for soc in sub_sockets
+            datajson = soc.recv()
+            seqid = datajson["seq"]
+            seqdata = datajson["data"]
+            h.create(seqid,seqdata)
+
 
 def send(socket, seq, data):
   ''' Send data through provided socket. '''
