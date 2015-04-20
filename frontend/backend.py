@@ -35,8 +35,10 @@ def app():
 	m = out_Q_conn.read()
 
 	if not m:
+		response.status = 204
 		return ''
 	else:
+		response.status = 201
 		response_msg = m.get_body()
 		out_Q_conn.delete_message(m)
 		return response_msg

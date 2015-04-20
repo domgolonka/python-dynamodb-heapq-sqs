@@ -30,10 +30,9 @@ PORT = 8080
 
 def do_delete(my_sqs):
 	msg = ""
-	msg_status = 404 #assume is an error to start of with
-	#print"delete has been called\n"
+	msg_status = 404 
+
 	if not del_pat.match(request.query_string):
-		
 		abort(404, "Query string does not match pattern '{0}'".format(DEL_QUERY_PATTERN))
 
 	if "id" in request.query: #checks to see if the request is by id
@@ -43,14 +42,14 @@ def do_delete(my_sqs):
 		id_delete = id_delete[begin:end]
 		sqs_msg = { "req_type": "delete", "by": "id", "data": { "type": "person", "id" : str(id_delete) } }
 		msg = {"data":{"type": "Notification", "msg": "Accepted"}}
-		msg_status = 200
+		msg_status = 202
 		
 
 	elif "name" in request.query: #checks to see if delete request if by name
 		get_name = request.query.name
 		sqs_msg = { "req_type": "delete", "by": "name", "data": { "type": "person", "name" : get_name} }
 		msg = {"data":{"type": "Notification", "msg": "Accepted"}}
-		msg_status = 200
+		msg_status = 202
 
 	f = boto.sqs.message.Message()
 	f.set_body(json.dumps(sqs_msg))
@@ -59,7 +58,6 @@ def do_delete(my_sqs):
 	return HTTPResponse(status=msg_status, body=json.dumps(msg,indent=4))
 
 def do_add_activities(my_sqs):
-	#print"Add_Activities has been called\n"
 	if not addActs_pat.match(request.query_string):
             abort(404, "Query string does not match pattern '{0}'".format(ADD_ACTS_QUERY_PATTERN))
  	
@@ -77,7 +75,7 @@ def do_add_activities(my_sqs):
    	f.set_body(json.dumps(sqs_msg))
    	my_sqs.write(f)
 
-	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))
+	return HTTPResponse(status=202, body=json.dumps(msg, indent=4))
 
 def do_retrieve(my_sqs):
 	#print"Retrieve has been called\n"
@@ -98,7 +96,7 @@ def do_retrieve(my_sqs):
 	f.set_body(json.dumps(sqs_msg))
 	my_sqs.write(f)
 
-	return HTTPResponse(status=200, body=json.dumps(msg,indent=4))
+	return HTTPResponse(status=202, body=json.dumps(msg,indent=4))
 
 def do_create(my_sqs):
 	#print "Create has been called\n"
@@ -122,4 +120,4 @@ def do_create(my_sqs):
 	f.set_body(json.dumps(sqs_msg))
 	my_sqs.write(f)
 
-	return HTTPResponse(status=200, body=json.dumps(msg, indent=4))   
+	return HTTPResponse(status=202, body=json.dumps(msg, indent=4))   
