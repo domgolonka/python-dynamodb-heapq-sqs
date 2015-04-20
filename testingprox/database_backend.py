@@ -160,14 +160,14 @@ def kzcl(kz):
         kz.stop()
         kz.close()
 
-def getSQSConn():
+def getSQSConn(queue_name):
   
   try:
     conn = boto.sqs.connect_to_region(AWS_REGION)
     if conn == None:
       sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
       sys.exit(1)
-    my_q = conn.create_queue("queue_name")
+    my_q = conn.create_queue(queue_name)
 
   except Exception as e:
     sys.stderr.write("Exception connecting to SQS\n")
@@ -294,7 +294,8 @@ def main():
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
 
-        in_sqs=getSQSConn()
+        #in_sqs=getSQSConn()
+        heaps=false
         while True:
           print "lalala"
 
@@ -303,19 +304,25 @@ def main():
           
           seqid = datajson["seq"]
           seqdata = datajson["data"]
+          if heaps == true:
+            #something with hea.p
+
+        
           if datajson:
             if seqid == seq_num.last_set:
               #DO SOME OPERATIONS
+              heaps=false
             else:
               h = heap.sqsheapq(seqid)
               h.create(seqid, seqdata)
+              heaps=true
           if not req_smg:
             time.sleep(5)
           else:
             for soc in sub_sockets
               senddata(soc, seq_num.last_set, req_smg)
-          	seq_num+=1
-          	
+            seq_num+=1
+          	#do some database operations
             #time.sleep(1)
 
 def send(socket, seq, data):
