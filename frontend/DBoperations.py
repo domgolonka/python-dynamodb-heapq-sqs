@@ -15,7 +15,8 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 AWS_REGION = "us-west-2"
 PORT = 8080
 def do_operation(req_smg,DB1_table,output_q,boolprime):
-	req = json.loads(req_smg.get_body())
+	#req = json.loads(req_smg.get_body())
+	req=req_smg
 	if req["req_type"] =="delete":
 		print "Im deleting"
 		do_delete(req,DB1_table,output_q,boolprime)
@@ -109,26 +110,32 @@ def do_retrieve(req,DB1_table,output_q,boolprime):
 	output_q.write(out_msg)
 
 def do_add_activities(req,DB1_table,output_q,boolprime):
-	activity_id = req["data"]["id"]
-	activity_query = req["data"]["activities"]
-	activity_list= activity_query.split(',')
-	print activity_list
-	user = DB1_table.get_item(id=activity_id)
-	existing_activities = user['activities']
-	#list_new_activities = activity_query	#list of activities from the add_activities call
-	added_activities = [] #activities actually added
-	for new_act in activity_query:
-		if (existing_activities.count(new_act) == 0):
-			existing_activities = new_act +activity_query
-			user['activities'] = existing_activities
-			print "users"
-			print user['activities']
-			user.save()
-	msg_q= {'data': {'type':'person', 'id': activity_id, 'activities': added_activities}}
+	try:
+		activity_id = req["data"]["id"]
+		activity_query = req["data"]["activities"]
+		activity_list= activity_query.split(',')
+		print activity_list
+		user = DB1_table.get_item(id=activity_id)
+		existing_activities = user['activities']
+		#list_new_activities = activity_query	#list of activities from the add_activities call
+		added_activities = [] #activities actually added
+		for new_act in activity_query:
+			if (existing_activities.count(new_act) == 0):
+				existing_activities = new_act +activity_query
+				user['activities'] = existing_activities
+				print "users"
+				print user['activities']
+				user.save()
+		msg_q= {'data': {'type':'person', 'id': activity_id, 'activities': added_activities}}
+		out_msg = boto.sqs.message.Message()
+		out_msg.set_body(json.dumps(msg_q,indent=4))
+		output_q.write(out_msg)
+	except Exception as name_doesnt_exist:
+			msg_q= {"errors":[{"not_found":{"id": str(activity_id)}}]}
+			msg_status = 404
 	out_msg = boto.sqs.message.Message()
-	out_msg.set_body(json.dumps(msg_q,indent=4))
+	out_msg.set_body(json.dumps(msg_q, indent=4))
 	output_q.write(out_msg)
-
 def do_create(req,DB1_table,output_q,boolprime):
 	id_query = req["data"]["id"]
 	name_query = req["data"]["name"]
