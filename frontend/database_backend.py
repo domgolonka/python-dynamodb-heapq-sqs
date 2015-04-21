@@ -38,7 +38,7 @@ AWS_REGION = "us-west-2"
 BASE_INSTANCE_NAME = "DB"
 
 # Names for ZooKeeper hierarchy
-APP_DIR = "/meme/" + BASE_INSTANCE_NAME
+APP_DIR = "/mempoe/" + BASE_INSTANCE_NAME
 PUB_PORT = "/Pub"
 SUB_PORTS = "/Sub"
 SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
