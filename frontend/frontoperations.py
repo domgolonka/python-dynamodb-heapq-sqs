@@ -82,12 +82,12 @@ def do_retrieve(my_sqs):
 
 	if "id" in request.query:
 		id_query = request.query.id
-		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "id": id_query}}
+		sqs_msg = { "req_type" : "retrieve", "by": "id", 'data': {"type":"person", "id": id_query}}
 		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
 
 	elif "name" in request.query:
 		name_query = request.query.name
-		sqs_msg = { "req_type" : "retrieve", 'data': {"type":"person", "name": name_query}}
+		sqs_msg = { "req_type" : "retrieve", "by": "name",'data': {"type":"person", "name": name_query}}
 		msg = { "data": {"type": "Notification", "msg": "Accepted"}}
 	
 	f = boto.sqs.message.Message()
