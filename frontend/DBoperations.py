@@ -168,12 +168,10 @@ def do_create(req,DB1_table,output_q,boolprime):
 									}
 					out_msg = boto.sqs.message.Message()
 					out_msg.set_body(json.dumps(msg_q, indent =4))
-					output_q.write(out_msg)
-			msg_status = 201
-			msg_q= {'data':{'type':'person', 'id': id_query}}#, "links":{"self":"http://localhost:8080/retrieve?id="+ str(id_query)}}}
+					return output_q.write(out_msg)
 		else:
 				msg_status= 400
-				msg = {'error':[{
+				msg_q = {'error':[{
 						'id_exists':{
 							'status': msg_status,
 							'title':'id already exists', 
@@ -183,9 +181,9 @@ def do_create(req,DB1_table,output_q,boolprime):
 								}
 								}]
 								}
-	out_msg = boto.sqs.message.Message()
-	out_msg.set_body(json.dumps(msg_q,indent=4))
-	output_q.write(out_msg)
+				out_msg = boto.sqs.message.Message()
+				out_msg.set_body(json.dumps(msg_q,indent=4))
+				output_q.write(out_msg)
 def parse_input(input_string, attr):# this function parse the input and return the attribute values
 	try:
 		
