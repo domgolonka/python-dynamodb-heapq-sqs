@@ -45,7 +45,7 @@ WEB_PORT = 8080
 BASE_INSTANCE_NAME = "DB"
 
 # Names for ZooKeeper hierarchy
-APP_DIR = "/ali/" + BASE_INSTANCE_NAME
+APP_DIR = "/meme/" + BASE_INSTANCE_NAME
 PUB_PORT = "/Pub"
 SUB_PORTS = "/Sub"
 SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
@@ -66,15 +66,15 @@ def build_parser():
     ''' Define parser for command-line arguments '''
     parser = argparse.ArgumentParser(description="The database backend")
     parser.add_argument("zkhost", help="ZooKeeper host string (name:port or IP:port, with port defaulting to 2181)",nargs='?',default="cloudsmall1.cs.surrey.sfu.ca")
-    parser.add_argument("inSQS_name", help="name of input queue", nargs='?', default="inque")
-    parser.add_argument("outSQS_name", help="name of output queue", nargs='?', default="outque")
+    parser.add_argument("inSQS_name", help="name of input queue", nargs='?', default="newin")
+    parser.add_argument("outSQS_name", help="name of output queue", nargs='?', default="newout")
     parser.add_argument("max_write", type=int, help="number of max write", nargs='?', default=30)
     parser.add_argument("max_read", type=int, help="number of max read", nargs='?', default=30 )
     parser.add_argument("name_all", help="Name of all database being used", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
-    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=3)
+    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
 
    
     #value never given also set to default
@@ -169,7 +169,7 @@ def getSQSConn(queue_name):
     if conn == None:
       sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
       sys.exit(1)
-    my_q = conn.create_queue(queue_name)
+    my_q = conn.get_queue(queue_name)
 
   except Exception as e:
     sys.stderr.write("Exception connecting to SQS\n")
@@ -294,22 +294,27 @@ def main():
         # Now the instances can start responding to requests
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
-
-       # input_q=getSQSConn()
-
         while True:
           print "lalala"
           print args.name
-          #  req_smg = input_q.read()
-        
-        
-          #  if not req_smg:
-          #seq_num = kz.Counter(SEQUENCE_OBJECT)
-          print seq_num.last_set
-          seq_num+=1
-          time.sleep(5)
-          #time.sleep(1)
+          req_smg = in_sqs.read()
+          #req=req_smg.get_body()
 
+          if not req_smg:
+          	print "I dont read"
+          	#time.sleep(5)
+          	#DBoperations.do_operations(req_smg,db_table,out_sqs,True)
+          else:
+          	print "i read"
+          	import DBoperations
+          	DBoperations.do_operation(req_smg,db_table,out_sqs,True)
+          	print "left that"
+          	time.sleep(2)
+          	#time.sleep(10)
+
+       # input_q=getSQSConn()
+
+  
 
 # Standard Python shmyntax for the main file in an application
 if __name__ == "__main__":
