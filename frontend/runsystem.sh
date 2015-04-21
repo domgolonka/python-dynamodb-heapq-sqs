@@ -26,11 +26,8 @@ echo $base_port
 echo ""
 echo ""
 
-#gnome-terminal -e "python ./frontend.py $input_q 8080"
-#gnome-terminal -e ./backend.py $output_q
-#gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca DB1 1 $input_q $output_q $base_port localhost DB1"
-#gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB1 $num_db"
-#gnome-terminal -e  ./../frontend/frontend.py $input_q; $SHELL
+
+gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB1 $num_db"
+
 gnome-terminal -e "python ./frontend.py $input_q $output_q"
-#gnome-terminal -e "./backend.py $output_q"
-#gnome-terminal -e "./database_backend.py $zoostring $input_q $output_q $w_capacity $r_capacity $dbase_names $num_db $dbabse_proxy $base_port"
+gnone-terminal -e "python ./backend.py $output_q"
