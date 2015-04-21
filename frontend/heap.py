@@ -17,10 +17,20 @@ class sqsheapq:
 				self.counter -= 1
 			self.seqnum += 1
 			return item
+#		elif self.seqnum > self.heaplist[0][0]:
+#			item = heapq.heappop(self.heaplist)
+#			return item
 		else:
 			return ""
 	def add(self, seq_num, op):
-		heapq.heappush(self.heaplist, (seq_num, op))
-		self.counter += 1
+		if seq_num >= self.seqnum:
+			heapq.heappush(self.heaplist, (seq_num, op))
+			self.counter += 1
 	def getTop(self):
-		return self.heaplist[0]
+		return self.heaplist[0][0]
+
+	def getCounter(self):
+		return self.counter
+
+	def getLength(self):
+		return len(self.heaplist)

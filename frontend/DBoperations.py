@@ -15,7 +15,8 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 AWS_REGION = "us-west-2"
 PORT = 8080
 def do_operation(req_smg,DB1_table,output_q,boolprime):
-	req = json.loads(req_smg.get_body())
+	#req = json.loads(req_smg.get_body())
+	req=req_smg
 	if req["req_type"] =="delete":
 		print "Im deleting"
 		do_delete(req,DB1_table,output_q,boolprime)
