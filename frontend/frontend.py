@@ -19,14 +19,17 @@ from boto.dynamodb2.table import Table
 from boto.exception import JSONResponseError
 from bottle import route, run, request, response, abort, default_app, HTTPResponse
 
-DEFAULT_INPUT_Q_NAME = "inQ"
+DEFAULT_INPUT_Q_NAME = "newin"
+DEFAULT_out_Q_NAME   = "newout"
 AWS_REGION = "us-west-2"
 WEB_PORT = 8080
 
 def build_parser():
 	''' Define parser for command-line arguments '''
 	parser = argparse.ArgumentParser(description="Web server demonstrating final project technologies")
-	parser.add_argument("name", help="Name of Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
+	parser.add_argument("name", help="Name of input Queue", nargs='?', default=DEFAULT_INPUT_Q_NAME)
+	parser.add_argument("out_q", help="Name of output Queue", nargs='?', default=DEFAULT_out_Q_NAME)
+	
 	parser.add_argument("web_port", type=int, help="Web server port number", nargs='?', default=WEB_PORT)
 
 	return parser
@@ -39,6 +42,7 @@ def main():
 	args = parser.parse_args()
 
 	in_Q_conn = getConn(args.name)
+	getConn(args.out_q)
 
 	print "-- FRONTEND --"
 	app = default_app()
