@@ -16,6 +16,31 @@ os.system("curl 'http://localhost:8080/create?id=6&name=ali&activities=hi,bye'")
 time.sleep(1)
 os.system("curl 'http://localhost:8080/create?id=7&name=jug&activities=hi,bye'")
 time.sleep(1)
+
+os.system("curl 'http://localhost:8080/create?id=4&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=6&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=7&name=jug&activities=hi,bye'")
+time.sleep(1)
+
+
+
+
+os.system("curl 'http://localhost:8080/create?id=4&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=6&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=7&name=jug&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=4&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=6&name=ali&activities=hi,bye'")
+time.sleep(1)
+os.system("curl 'http://localhost:8080/create?id=7&name=jug&activities=hi,bye'")
+time.sleep(1)
+
+
 #sleep(4)
 os.system("curl 'http://localhost:8080/add_activities?id=4&activities=go,me'")
 time.sleep(1)

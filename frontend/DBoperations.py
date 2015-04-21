@@ -15,20 +15,20 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 AWS_REGION = "us-west-2"
 PORT = 8080
 def do_operation(req_smg,DB1_table,output_q,boolprime):
-	req =req_smg
-	print ""
+	req = json.loads(req_smg)
+	
 	print req
-
-	if req[3] =="delete":
+	
+	if req["req_type"] =="delete":
 		print "Im deleting"
 		do_delete(req,DB1_table,output_q,boolprime)
-	elif req[3]=="retrieve":
+	elif req["req_type"]=="retrieve":
 		print "Im retrieving"
 		do_retrieve(req,DB1_table,output_q,boolprime)
-	elif req[3] == "create":
+	elif req["req_type"] == "create":
 		print "Im creating"
 		do_create(req,DB1_table,output_q,boolprime)
-	elif req[3]=="add_activities":
+	elif req["req_type"]=="add_activities":
 		print "Im addig activities"
 		do_add_activities(req,DB1_table,output_q,boolprime)
 
