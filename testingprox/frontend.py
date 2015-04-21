@@ -25,7 +25,7 @@ from bottle import route, run, request, response, abort, default_app, HTTPRespon
 
 
 
-DEFAULT_INPUT_Q_NAME = "inQueue"
+DEFAULT_INPUT_Q_NAME = "inque"
 AWS_REGION = "us-west-2"
 WEB_PORT = 8080
 

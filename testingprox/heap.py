@@ -24,3 +24,9 @@ class sqsheapq:
 		self.counter += 1
 	def getTop(self):
 		return self.heaplist[0][0]
+
+	def getCounter(self):
+		return self.counter
+
+	def getLength(self):
+		return len(self.heaplist)

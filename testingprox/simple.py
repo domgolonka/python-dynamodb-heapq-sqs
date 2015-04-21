@@ -11,7 +11,13 @@ def sleep(sec):
 		print "tick"
 		time.sleep(1)
 '''
-os.system("curl 'http://localhost:8080/delete?id=4'")
+os.system("curl 'http://localhost:8080/retrieve?id=1'")
+os.system("curl 'http://localhost:8080/retrieve?id=2'")
+os.system("curl 'http://localhost:8080/retrieve?id=3'")
+os.system("curl 'http://localhost:8080/retrieve?id=4'")
+os.system("curl 'http://localhost:8080/retrieve?id=5'")
+os.system("curl 'http://localhost:8080/retrieve?id=6'")
+
 
 '''
 print "1: "
