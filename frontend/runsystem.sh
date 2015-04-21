@@ -23,11 +23,10 @@ echo $base_port
  #num_db=$(($num_db+1))
 #done
 
-echo ""
-echo ""
-
-
-gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB1 $num_db"
-
 gnome-terminal -e "python ./frontend.py $input_q $output_q"
 gnone-terminal -e "python ./backend.py $output_q"
+
+#gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB1 $num_db"
+#gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB2 $num_db"
+#gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca $input_q $output_q $w_capacity $r_capacity $dbase_names $dbabse_proxy $base_port DB3 $num_db"
+

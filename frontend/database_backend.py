@@ -19,33 +19,26 @@ from boto.dynamodb2.table import Table
 from boto.exception import JSONResponseError
 
 import DB
-
-# Installed packages
-
+import heapq
+import heap
 import zmq
-
 import kazoo.exceptions
 
 from bottle import route, run, request, response, abort, default_app
 
 # Local modules
-#import table
-#import retrieve
+
 import gen_ports
 import kazooclientlast
 
 REQ_ID_FILE = "reqid.txt"
-
-
 AWS_REGION = "us-west-2"
-
-WEB_PORT = 8080
 
 # Instance naming
 BASE_INSTANCE_NAME = "DB"
 
 # Names for ZooKeeper hierarchy
-APP_DIR = "/meme/" + BASE_INSTANCE_NAME
+APP_DIR = "/mempoe/" + BASE_INSTANCE_NAME
 PUB_PORT = "/Pub"
 SUB_PORTS = "/Sub"
 SEQUENCE_OBJECT = APP_DIR + "/SeqNum"
@@ -54,9 +47,6 @@ BARRIER_NAME = "/Ready"
 
 DEFAULT_INPUT_SQS_NAME = "input_SQS"
 DEFAULT_OUTPUT_SQS_NAME = "output_SQS"
-
-
-
 
 # Publish and subscribe constants
 SUB_TO_NAME = 'localhost' # By default, we subscribe to our own publications
@@ -75,8 +65,6 @@ def build_parser():
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
-
-   
     #value never given also set to default
     parser.add_argument("sub_to_name", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="localhost")
     return parser
@@ -196,26 +184,6 @@ def getTable(table_name):
 
 
 def main():
-    '''
-       Main routine. Initialize everything, wait
-       for all the other instances to complete their
-       initialization, then begin responding to requests.
-
-       The following list of `global` statements are required
-       by one of the more awkward parts of Python syntax: If you
-       assign to a global variable anywhere inside a function, it
-       is safest to declare that variable `global` at the
-       top of the function.
-
-       Strictly speaking, you don't have to do this in every 
-       case, but it's simplest to just observe this rule and
-       avoid mystifying bugs in the cases where it is required.
-
-       If you're only *reading* a global variable inside a
-       function, you don't need to declare it. For example,
-       retrieve_route() doesn't declare `args` because it
-       only reads that global variable.
-    '''
 
     global args
     global table
@@ -231,29 +199,12 @@ def main():
    
     dbname_a = args.name_all.split(',')
 
-    print dbname_a
-    for x in range (0,1):
-   		print dbname_a[x]
-    
-    '''
-  for num in range(1,3):
-    parser = build_parser()
-    args = parser.parse_args()
-    okay = args.name
-    print okay
-    yaya = args.proxy_list
-    print yaya
-      print "lalal"
-  	'''
-
     #connect to sqs queues
     in_sqs = getSQSConn(args.inSQS_name)
     out_sqs = getSQSConn(args.outSQS_name)
-   
     
     # Set up the Database
     db_table = getTable(args.name)
-
    
     #Initialize request id from durable storage
     if not os.path.isfile(REQ_ID_FILE):
@@ -294,26 +245,68 @@ def main():
         # Now the instances can start responding to requests
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
-        while True:
-          print "lalala"
-          print args.name
-          req_smg = in_sqs.read()
-          #req=req_smg.get_body()
 
-          if not req_smg:
-          	print "I dont read"
-          	#time.sleep(5)
-          	#DBoperations.do_operations(req_smg,db_table,out_sqs,True)
+        h = heap.sqsheapq(1)
+        while True:
+          
+          req_msg = in_sqs.read()
+          
+          if req_msg:
+            request = req_msg.get_body()
+            in_sqs.delete_message(req_msg)
+            seq_num+=1
+            last_seq_num = seq_num.last_set
+            
+            #request = json.dumps(request)
+            send(pub_socket, last_seq_num, request)
+            #send(pub_socket, seq_num.value, request)
+            h.add(last_seq_num, request)
+            #h.add(seq_num.value, request)
+            #seq_num+=1
+
           else:
-          	print "i read"
-          	import DBoperations
-          	DBoperations.do_operation(req_smg,db_table,out_sqs,True)
-          	print "left that"
-          	time.sleep(2)
-          	#time.sleep(10)
+            for soc in sub_sockets:
+              try:
+                datajson = soc.recv_json(zmq.NOBLOCK)
+                seqid = datajson["seq"]
+                seqdata = datajson["data"]
+                h.add(seqid,seqdata)
+              except zmq.ZMQError as e:
+                if e.errno != zmq.EAGAIN:
+                  raise e
+
+          #while h.counter > 0:
+          while h.getLength() > 0:
+            top_item = h.remove()
+            if top_item:
+              #DO OPERATIONS
+              import DBoperations
+              request_message = top_item[1]
+
+              DBoperations.do_operation(request_message,db_table,out_sqs,True)
+              time.sleep(2)
+
+            else:
+              for soc in sub_sockets:
+                try:
+                  datajson = soc.recv_json(zmq.NOBLOCK)
+                  seqid = datajson["seq"]
+                  #print "3"
+                  seqdata = datajson["data"]
+                  h.add(seqid,seqdata)
+                  #print "4"
+                except zmq.ZMQError as e:
+                  if e.errno != zmq.EAGAIN:
+                    raise e
+
+              time.sleep(5)
 
        # input_q=getSQSConn()
 
+def send(socket, seq, data):
+  ''' Send data through provided socket. '''
+  senddata = {"seq": seq, "data": data}
+  socket.send_json(senddata)
   
 
 # Standard Python shmyntax for the main file in an application
