@@ -311,9 +311,8 @@ def main():
 
         #in_sqs=getSQSConn()
 
-        h = heap.sqsheapq(0)
+        h = heap.sqsheapq(1)
         curr_local_seq = 0
-        
         while True:
           
           req_msg = in_sqs.read()
@@ -321,18 +320,22 @@ def main():
           if req_msg:
             request = req_msg.get_body()
             in_sqs.delete_message(req_msg)
-            last_seq_num = seq_num.last_set
             seq_num+=1
+            last_seq_num = seq_num.last_set
+            
             print ""
             print ""
             print "DB instance: " + str(args.name)
             send(pub_socket, last_seq_num, request)
             #send(pub_socket, seq_num.value, request)
             print "-- SENDING to heap: " + str(request)
-            print "------- heap id: " + str(seq_num.value) + " | message: " + str(request)
+            print "------- heap id: " + str(last_seq_num) + " | message: " + str(request)
+            #print "------- heap id: " + str(seq_num.value) + " | message: " + str(request)
             h.add(last_seq_num, request)
             #h.add(seq_num.value, request)
             print "heap: " + str(h)
+
+            #seq_num+=1
 
           else:
             for soc in sub_sockets:
@@ -345,8 +348,11 @@ def main():
                 if e.errno != zmq.EAGAIN:
                   raise e
 
-          while h.counter > 0:
+          #while h.counter > 0:
+          while h.getLength() > 0:
             top_item = h.remove()
+
+            #print 
 
             if top_item:
               #DO OPERATIONS
@@ -360,10 +366,14 @@ def main():
             else:
               for soc in sub_sockets:
                 try:
+                  #print "1"
                   datajson = soc.recv_json(zmq.NOBLOCK)
+                  #print "2"
                   seqid = datajson["seq"]
+                  #print "3"
                   seqdata = datajson["data"]
                   h.add(seqid,seqdata)
+                  #print "4"
                 except zmq.ZMQError as e:
                   if e.errno != zmq.EAGAIN:
                     raise e
