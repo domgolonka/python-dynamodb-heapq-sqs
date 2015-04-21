@@ -19,7 +19,8 @@ from boto.dynamodb2.table import Table
 from boto.exception import JSONResponseError
 
 import DB
-
+import heapq
+import heap
 import zmq
 import kazoo.exceptions
 
@@ -63,7 +64,7 @@ def build_parser():
     parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
-    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=3)
+    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
     #value never given also set to default
     parser.add_argument("sub_to_name", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="localhost")
     return parser
@@ -256,6 +257,7 @@ def main():
             seq_num+=1
             last_seq_num = seq_num.last_set
             
+            #request = json.dumps(request)
             send(pub_socket, last_seq_num, request)
             #send(pub_socket, seq_num.value, request)
             h.add(last_seq_num, request)
