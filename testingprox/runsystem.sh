@@ -24,16 +24,26 @@ for word in ${WORD_LIST[@]}; do
  num_db=$(($num_db+1))
 done
 
-echo ""
-echo ""
+gnome-terminal -e "python ./frontend.py inq 8080"
 
-#gnome-terminal -e "python ./frontend.py $input_q 8080"
-#gnome-terminal -e ./backend.py $output_q
+gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca inq outq DB1,DB2,DB3 7777 DB1 3"
+gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca inq outq DB1,DB2,DB3 7777 DB2 3"
+gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca inq outq DB1,DB2,DB3 7777 DB3 3"
+
+#python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca inq outq DB1,DB2 7777 DB1 2
+
+#gnome-terminal -e "python ./database_backend.py"
+#gnome-terminal -e "python ./frontend.py inque 8080"
+#gnome-terminal -e "python ./database_backend.py"
+
+#python ./database_backend.py
+
+#gnome-terminal -e "python ./backend.py $output_q"
 #gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca DB1 1 $input_q $output_q $base_port localhost DB1"
 #gnome-terminal -e "python ./database_backend.py cloudsmall1.cs.surrey.sfu.ca DB1 1 $input_q $output_q $base_port localhost DB2"
 
 #gnome-terminal -e  ./../frontend/frontend.py $input_q; $SHELL
-gnome-terminal -e "python ./frontend.py $input_q"
+#gnome-terminal -e "python ./frontend.py $input_q"
 #gnome-terminal -e "./backend.py $output_q"
 #gnome-terminal -e "./database_backend.py $zoostring $input_q $output_q $w_capacity $r_capacity $dbase_names $num_db $dbabse_proxy $base_port"
 

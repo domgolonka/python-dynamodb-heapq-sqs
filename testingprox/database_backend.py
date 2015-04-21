@@ -24,17 +24,12 @@ from boto.exception import JSONResponseError
 
 import DB
 
-# Installed packages
-
 import zmq
-
 import kazoo.exceptions
 
 from bottle import route, run, request, response, abort, default_app
 
 # Local modules
-#import table
-#import retrieve
 import gen_ports
 import kazooclientlast
 
@@ -42,8 +37,6 @@ REQ_ID_FILE = "reqid.txt"
 
 
 AWS_REGION = "us-west-2"
-
-WEB_PORT = 8080
 
 # Instance naming
 BASE_INSTANCE_NAME = "DB"
@@ -60,8 +53,6 @@ DEFAULT_INPUT_SQS_NAME = "input_SQS"
 DEFAULT_OUTPUT_SQS_NAME = "output_SQS"
 
 
-
-
 # Publish and subscribe constants
 SUB_TO_NAME = 'localhost' # By default, we subscribe to our own publications
 BASE_PORT = 7777
@@ -75,25 +66,41 @@ def build_parser():
     parser.add_argument("name_all", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
     parser.add_argument("base_port", type=int, help="Base port for publish/subscribe", nargs='?', default=BASE_PORT)
     parser.add_argument("name", help="Name of this instance", nargs='?', default=DEFAULT_NAME)
-    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=2)
+    parser.add_argument("number_dbs", type=int, help="Number of database instances", nargs='?', default=1)
     parser.add_argument("sub_to_name", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="localhost")
     parser.add_argument("proxy_list", help="List of instances to proxy, if any (comma-separated)", nargs='?', default="")
  	
     return parser
 
+
 def get_ports():
-    ''' Return the publish port and the list of subscribe ports '''
+    # Return the publish port and the list of subscribe ports
     db_names = dbname_a
+    #print db_names, args.proxy_list.split(',')
+    #print  db_names
     print db_names, args.proxy_list.split(',')
-    print  db_names
+
+    if args.proxy_list != '':
+        proxies = args.proxy_list.split(',')
+    else:
+        proxies = []
+    #print proxies
+    #print args.name
+    return gen_ports.gen_ports(args.base_port, db_names, proxies, args.name)
+
+
+'''
+def get_ports():
+    # Return the publish port and the list of subscribe ports
+    db_names = [BASE_INSTANCE_NAME+str(i) for i in range(1, 1+args.number_dbs)]
     print db_names, args.proxy_list.split(',')
     if args.proxy_list != '':
         proxies = args.proxy_list.split(',')
     else:
         proxies = []
-    print proxies
-    print args.name
     return gen_ports.gen_ports(args.base_port, db_names, proxies, args.name)
+'''
+
 
 def setup_pub_sub(zmq_context, sub_to_name):
     ''' Set up the publish and subscribe connections '''
@@ -130,6 +137,9 @@ def setup_pub_sub(zmq_context, sub_to_name):
         sub_socket.connect("tcp://{0}:{1}".format(sub_to_name, sub_port))
         sub_sockets.append(sub_socket)
 
+        print "-- def setup_pub_sub():  " + str(sub_socket)
+        #print sub_socket
+
 @contextlib.contextmanager
 def zmqcm(zmq_context):
     '''
@@ -160,14 +170,14 @@ def kzcl(kz):
         kz.stop()
         kz.close()
 
-def getSQSConn():
+def getSQSConn(queue_name):
   
   try:
     conn = boto.sqs.connect_to_region(AWS_REGION)
     if conn == None:
       sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
       sys.exit(1)
-    my_q = conn.create_queue("queue_name")
+    my_q = conn.create_queue(queue_name)
 
   except Exception as e:
     sys.stderr.write("Exception connecting to SQS\n")
@@ -181,7 +191,7 @@ def getTable(table_name):
       DB_table = Table.create(table_name, schema=[HashKey('id')], connection = boto.dynamodb2.connect_to_region(AWS_REGION))
   
   except boto.exception.JSONResponseError as table_warning:
-      if table_warning.body['message'] == "Table already exists: " + args.name:
+      if table_warning.body['message'] == "Table already exists: " + table_name:
         DB_table = Table(table_name, connection = boto.dynamodb2.connect_to_region(AWS_REGION))
       else:
         raise table_warning
@@ -215,7 +225,7 @@ def main():
        retrieve_route() doesn't declare `args` because it
        only reads that global variable.
     '''
-
+    
     global args
     global table
     global seq_num
@@ -223,32 +233,37 @@ def main():
     global request_count
     global dbname_a
 
- 
- 
+
     parser = build_parser()
     args = parser.parse_args()
-   
+    
     dbname_a = args.name_all.split(',')
 
+    '''
     print dbname_a
     for x in range (0,1):
    		print dbname_a[x]
-    
     '''
-  for num in range(1,3):
-    parser = build_parser()
-    args = parser.parse_args()
-    okay = args.name
-    print okay
-    yaya = args.proxy_list
-    print yaya
-      print "lalal"
-  	'''
+
+    '''
+    for num in range(1,3):
+      parser = build_parser()
+      args = parser.parse_args()
+      okay = args.name
+      print okay
+      yaya = args.proxy_list
+      print yaya
+        print "lalal"
+    '''
+
+    
+
 
     #connect to sqs queues
     in_sqs = getSQSConn(args.inSQS_name)
     out_sqs = getSQSConn(args.outSQS_name)
-   
+    print args.inSQS_name   
+
     
     # Set up the Database
     db_table = getTable(args.name)
@@ -294,34 +309,121 @@ def main():
 
         seq_num = kz.Counter(SEQUENCE_OBJECT)
 
-        in_sqs=getSQSConn()
+        #in_sqs=getSQSConn()
+
+        h = heap.sqsheapq(1)
+        curr_local_seq = 0
         while True:
-          print "lalala"
+          
+          req_msg = in_sqs.read()
+          
+          if req_msg:
+            request = req_msg.get_body()
+            in_sqs.delete_message(req_msg)
+            seq_num+=1
+            last_seq_num = seq_num.last_set
+            
+            print ""
+            print ""
+            print "DB instance: " + str(args.name)
+            send(pub_socket, last_seq_num, request)
+            #send(pub_socket, seq_num.value, request)
+            print "-- SENDING to heap: " + str(request)
+            print "------- heap id: " + str(last_seq_num) + " | message: " + str(request)
+            #print "------- heap id: " + str(seq_num.value) + " | message: " + str(request)
+            h.add(last_seq_num, request)
+            #h.add(seq_num.value, request)
+            print "heap: " + str(h)
+
+            #seq_num+=1
+
+          else:
+            for soc in sub_sockets:
+              try:
+                datajson = soc.recv_json(zmq.NOBLOCK)
+                seqid = datajson["seq"]
+                seqdata = datajson["data"]
+                h.add(seqid,seqdata)
+              except zmq.ZMQError as e:
+                if e.errno != zmq.EAGAIN:
+                  raise e
+
+          #while h.counter > 0:
+          while h.getLength() > 0:
+            top_item = h.remove()
+
+            #print 
+
+            if top_item:
+              #DO OPERATIONS
+
+              print ""
+              print ""
+              print "DB instance: " + str(args.name)
+              print "--- DOING operation to be done:" + str(top_item)
+              time.sleep(2)
+
+            else:
+              for soc in sub_sockets:
+                try:
+                  #print "1"
+                  datajson = soc.recv_json(zmq.NOBLOCK)
+                  #print "2"
+                  seqid = datajson["seq"]
+                  #print "3"
+                  seqdata = datajson["data"]
+                  h.add(seqid,seqdata)
+                  #print "4"
+                except zmq.ZMQError as e:
+                  if e.errno != zmq.EAGAIN:
+                    raise e
+
+              time.sleep(5)
+
+
+
+
+
+
+              '''
+          if h.counter > 0:
+            if h.getTop() == curr_local_seq:
+              item = h.remove()
+              send(pub_socket, seq_num.last_set, item)
+              print "DB instance: " + str(args.name)
+              print "operation to be done:" + str(item)
+
+              #operations
+              curr_local_seq+=1
 
           req_smg = in_sqs.read()
-          datajson = pub_socket.recv()
-          
-          seqid = datajson["seq"]
-          seqdata = datajson["data"]
-          if datajson:
-            if seqid == seq_num.last_set:
-              #DO SOME OPERATIONS
-            else:
-              h = heap.sqsheapq(seqid)
-              h.create(seqid, seqdata)
-          if not req_smg:
-            time.sleep(5)
-          else:
-            for soc in sub_sockets
-              senddata(soc, seq_num.last_set, req_smg)
-          	seq_num+=1
-          	
-            #time.sleep(1)
+          if req_smg:
+            #last_seq = seq_num.last_set
+            #h = heap.sqsheapq(last_seq)
+            #print "here"
+            request_msg = req_smg.get_body()
+            in_sqs.delete_message(req_smg)
+
+            #print "request msg" + str(request_msg)
+            
+            h.add(seq_num.value, request_msg)
+            print h.getTop()
+            seq_num+=1 
+
+
+          for soc in sub_sockets:
+            #print "checking sub to :" + str(soc)
+            datajson = soc.recv()
+            seqid = datajson["seq"]
+            seqdata = datajson["data"]
+            h.add(seqid,seqdata)
+            '''
 
 def send(socket, seq, data):
   ''' Send data through provided socket. '''
   senddata = {"seq": seq, "data": data}
   socket.send_json(senddata)
+
 # Standard Python shmyntax for the main file in an application
 if __name__ == "__main__":
     main()
