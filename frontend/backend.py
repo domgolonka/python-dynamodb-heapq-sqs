@@ -61,7 +61,7 @@ def getConn(queue_name):
 			sys.stderr.write("Could not connect to AWS region '{0}'\n".format(AWS_REGION))
 			sys.exit(1)
 
-		my_q = conn.create_queue(queue_name)
+		my_q = conn.get_queue(queue_name)
 
 	except Exception as e:
 		sys.stderr.write("Exception connecting to SQS\n")
